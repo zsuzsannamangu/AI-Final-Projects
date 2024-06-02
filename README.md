@@ -6,19 +6,15 @@ I was given the task to create two different chatbots. The first one was a rule-
 
 The rule-based chatbot is for a restaurant's website. I created a predefined set of rules to dictate the bot's responses based on specific keywords. For some intents, such as opening hours and address, I created multiple responses that the bot would choose from according to specific inputs by the user. As for greetings, I created multiple responses that the bot would randomly pick from. When the user says "thank you", the bot responds with "Is there anything else I can help you with?". If the answer is no, the bot will say goodbye, if the answer is yes or another question is entered, the program keeps going. I did add some minimal styling and content here for the restaurant's website, but my focus was on the functionality of the chatbot.
 
-      import re #The re module allows you to create patterns and search, match, and manipulate strings based on these patterns.
+      import re
       import random
       from flask import Flask, render_template, request, jsonify #We are using Flask to build our restaurant's webpage
-          #The render_template function allows you to generate HTML from template files in the templates directory
-          #The request object contains all data sent by the client in an HTTP request. Here it's used to get JSON data from a POST request
-          #The jsonify function is used to convert Python data structures into JSON format. The JSON format is easy for humans to read and write, and easy for machines to parse and generate.
       
       app = Flask(__name__) #Create a Flask application instance
       
       #Define intents and corresponding patterns
       intents = {
-          "greeting": r"^(hi|hello|hey).*$", #The r prefix denotes a raw string, so backlashes will be treated as literal characters
-                                           #^ signifies that the pattern should match at the beginning of a line. $ signifies that the pattern should match at the end of a line.
+          "greeting": r"^(hi|hello|hey).*$",
           "address": r"(address|location|located|street)\??",
           "opening_hours": r"(hours|close|open|hours of operation|schedule)\??",
           "special_diets": r"(vegan|vegetarian|gluten free|nut free|soy free|dietery restrictions|special diet)\??",
@@ -59,7 +55,7 @@ The rule-based chatbot is for a restaurant's website. I created a predefined set
           
       def get_intent(user_input): #This function matches user input to intents based on the defined patterns.
           for intent, pattern in intents.items(): #The intents dictionary defines patterns for various intents.
-              if re.search(pattern, user_input.lower()): #Using the 're' modul, we search for patterns in the user input which is now all lowercase
+              if re.search(pattern, user_input.lower()):
                   return intent
           return None
       
@@ -88,7 +84,7 @@ The rule-based chatbot is for a restaurant's website. I created a predefined set
           if intent: #If an intent was identified
               response = get_response(intent, user_input) #Generate response based on identified intent
               if intent == "thank_you": #If user says thank you
-                  return jsonify(response=response, prompt_reply=True) #Return a JSON response with the generated response and an additional flag (prompt_reply=True) to indicate that the chatbot should prompt the user for further input
+                  return jsonify(response=response, prompt_reply=True)
               return jsonify(response=response) #If intent is not thank you, the function returns a JSON response with the generated response
           else: #If no intent was identified
               return jsonify(response="I'm sorry, I didn't understand that.") #Return this JSON response
