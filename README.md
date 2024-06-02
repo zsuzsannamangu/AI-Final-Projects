@@ -340,6 +340,46 @@ Rule-based chatbots are limited in their ability to respond to variations in use
 
 My AI-based chatbot is for answering Amazon product related questions. Users can ask specific product recommendations based on price, user ratings or bestsellers. I integrated my chatbot with an Amazon product API to fetch real-time information and provide dynamic responses. I trained my model using a fashion product dataset and spaCy's training module.
 
+train_ner_model.py:
+
+            import spacy
+            from spacy.training import Example
+            import csv
+            
+            # This line creates a blank spaCy NLP pipeline for the English language
+            nlp = spacy.blank("en") 
+            
+            # Defines the function to load training data from a CSV file and prepare it for training the NER (Named Entity Recognition) model
+            def load_training_data(file_path):
+                training_data = [] 
+                with open(file_path, "r", newline="", encoding="utf-8") as csvfile: 
+                    csvreader = csv.DictReader(csvfile) 
+                    for row in csvreader: # Starts a loop to iterate over each row
+                        text = row["Product Name"] 
+                        entities = [] # Initializes an empty list to store the entities extracted from the rows
+                        entities.append((0, len(row["Product Name"]), "PRODUCT_NAME")) 
+                        entities.append((len(row["Product Name"]) + 1, len(row["Product Name"]) + len(row["Brand"]), "BRAND"))  
+                        entities.append((len(row["Product Name"]) + len(row["Brand"]) + 1, len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]), "CATEGORY"))  
+                        entities.append((len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]) + 1, len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]) + len(row["Price"]), "PRICE")) 
+                        entities.append((len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]) + len(row["Price"]) + 1, len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]) + len(row["Price"]) + len(row["Rating"]), "RATING"))  
+                        entities.append((len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]) + len(row["Price"]) + len(row["Rating"]) + 1, len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]) + len(row["Price"]) + len(row["Rating"]) + len(row["Color"]), "COLOR"))
+                        entities.append((len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]) + len(row["Price"]) + len(row["Rating"]) + len(row["Color"]) + 1, len(row["Product Name"]) + len(row["Brand"]) + len(row["Category"]) + len(row["Price"]) + len(row["Rating"]) + len(row["Color"]) + len(row["Size"]), "SIZE"))  
+                        training_data.append((text, {"entities": entities}))
+                return training_data
+            
+            # Load the training data from your CSV file
+            file_path = "/Users/zsuzsi/Documents/GitHub/Live-Project_AI/ChatBot/AI_LP/data/fashion_products.csv"
+            training_data = load_training_data(file_path)
+            
+            # Process the training data and update the NER model
+            for text, annotations in training_data:
+                  doc = nlp.make_doc(text)
+                  example = Example.from_dict(doc, annotations)
+                  nlp.update([example], losses={})
+            
+            # Save the trained NER model
+            nlp.to_disk("/Users/zsuzsi/Documents/GitHub/Live-Project_AI/ChatBot/AI_LP/models/ner_model_fashion")
+
 app.py:
 
       from flask import Flask, render_template, request
@@ -524,6 +564,83 @@ app.py:
           app.run(debug=True)
 
 
+index.html:
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <title>Amazon Product Chatbot</title>
+          <style>
+              body {
+                  font-family: Georgia, 'Times New Roman', Times, serif;
+                  margin: 0;
+                  padding: 0;
+                  background-color: #eef5db;
+              }
+              .container {
+                  width: 80%;
+                  margin: auto;
+                  overflow: hidden;
+              }
+              
+              #main {
+                  background: #b8d8d8;
+                  color: #4f6367;
+                  padding: 20px;
+                  margin-top: 50px;
+              }
+              input[type="text"] {
+                  padding: 10px;
+                  margin: 5px;
+                  width: 30%;
+              }
+      
+              input[type="submit"] {
+                  padding: 10px;
+                  margin: 5px;
+              }
+      
+              #chat-box {
+                  height: 300px;
+                  overflow-y: scroll;
+                  border: 1px solid #ccc;
+                  padding: 10px;
+                  margin-bottom: 20px;
+                  background: #f9f9f9;
+              }
+              .user-query, .bot-response {
+                  margin-bottom: 10px;
+              }
+              .user-query {
+                  color: #fe5f55;
+              }
+              .bot-response {
+                  color: #678586;
+              }
+          </style>
+      </head>
+      <body>
+      <div class="container">
+          <div id="main">
+              <h1>Amazon Product Chatbot</h1>
+              <div id="chat-box">
+                  {% if user_query and bot_response %}
+                  <div class="user-query">You: {{ user_query }}</div>
+                  <div class="bot-response">Chelsea: {{ bot_response }}</div>
+                  {% else %}
+                  <p>Hello! My name is Chelsea. What would you like to find on Amazon?</p>
+                  </p>
+                  {% endif %}
+              </div>
+              <form method="POST" action="/">
+                  <input type="text" name="query" placeholder="Ask me something about products...">
+                  <input type="submit" value="Send">
+              </form>
+          </div>
+      </div>
+      </body>
+      </html>
 
 
 
