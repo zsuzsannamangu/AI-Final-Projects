@@ -52,45 +52,50 @@ The rule-based chatbot is for a restaurant's website. I created a predefined set
           "more_help": ["It looks like you might want to talk to someone from our team to answer this question, please call us at 123.456.7890!"],
           "thank_you": ["No problem. Anything else I can help you with today?"]
       }
-          
-      def get_intent(user_input): #This function matches user input to intents based on the defined patterns.
-          for intent, pattern in intents.items(): #The intents dictionary defines patterns for various intents.
+
+      #This function matches user input to intents based on the defined patterns
+      def get_intent(user_input): .
+          for intent, pattern in intents.items():
               if re.search(pattern, user_input.lower()):
                   return intent
           return None
-      
-      def get_response(intent, user_input): #This function selects a response based on the matched intent and user input
-          if intent in responses: #The responses dictionary contains responses for each intent,
-                                   
-              if isinstance(responses[intent], list):  #The responses dictionary contains multiple responses for some intents
-                  return random.choice(responses[intent]) #The bot will randomnly choose the answer to intents with multiple responses
+
+       #This function selects a response based on the matched intent and user input
+      def get_response(intent, user_input):
+          if intent in responses:
+              if isinstance(responses[intent], list):
+                  return random.choice(responses[intent])
               elif isinstance(responses[intent], dict):
-                  for keyword, response in responses[intent].items(): #The responses dictionary contains keyword-response pairs for the "opening_hours" and "address" intent.
-                      if keyword in user_input.lower(): #The answer will be determined by the keyword used by the user
+                  for keyword, response in responses[intent].items():
+                      if keyword in user_input.lower():
                           return response
           return "I'm sorry, I didn't understand that."
+
+      #This decorator tells Flask to call the index() function when the root URL('/') of the web application is accessed
+      @app.route('/')
+      def index():
+          return render_template('index.html')
       
-      @app.route('/') #This decorator tells Flask to call the index() function when the root URL('/') of the web application is accessed
-      def index(): #index() renders the main HTML page for the web application
-          return render_template('index.html') #Render an HTML template called index.html, Flask looks for this file in the templates directory
-      
-      @app.route('/chat', methods=['POST'])  #This decorator defines a route for the URL '/chat' that only accepts POST requests
-      def chat(): #This function handles incoming messages from the client and generates responses
-          user_input = request.json.get('message') #Retrieve the user input by extracting the message field from the JSON payload of the incoming POST request
-          intent = get_intent(user_input) #Analyze user input and determine the intent based on predefined patterns
+      @app.route('/chat', methods=['POST'])
+
+      #This function handles incoming messages from the client and generates responses
+      def chat(): 
+          user_input = request.json.get('message')
+          intent = get_intent(user_input)
           goodbye_pattern = re.compile(r'\b(bye|goodbye|exit|by|bey|goodby|goodbyes|good-bye|good-by|byes|good-byes|good-bys)[!.?]*$', re.IGNORECASE)
           if re.search(goodbye_pattern, user_input):
               return jsonify(response="Goodbye! Have a great day.")
-          if intent: #If an intent was identified
-              response = get_response(intent, user_input) #Generate response based on identified intent
-              if intent == "thank_you": #If user says thank you
+          if intent:
+              response = get_response(intent, user_input)
+              if intent == "thank_you":
                   return jsonify(response=response, prompt_reply=True)
-              return jsonify(response=response) #If intent is not thank you, the function returns a JSON response with the generated response
-          else: #If no intent was identified
-              return jsonify(response="I'm sorry, I didn't understand that.") #Return this JSON response
-      
+              return jsonify(response=response)
+          else:
+              return jsonify(response="I'm sorry, I didn't understand that.")
+
+      #Start the Flask development server, with debug mode enabled
       if __name__ == '__main__':
-          app.run(debug=True) #Start the Flask development server, with debug mode enabled
+          app.run(debug=True)
       
 ## AI-based chatbot
 
