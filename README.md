@@ -340,7 +340,189 @@ Rule-based chatbots are limited in their ability to respond to variations in use
 
 My AI-based chatbot is for answering Amazon product related questions. Users can ask specific product recommendations based on price, user ratings or bestsellers. I integrated my chatbot with an Amazon product API to fetch real-time information and provide dynamic responses. I trained my model using a fashion product dataset and spaCy's training module.
 
+app.py:
+
+      from flask import Flask, render_template, request
+      import spacy
+      import requests
+      import re
       
+      # Initialize Flask app
+      app = Flask(__name__)
+      
+      # Load the previously trained spaCy model for named entity recognition (NER)
+      custom_nlp = spacy.load("/Users/zsuzsi/Documents/GitHub/Live-Project_AI/ChatBot/AI_LP/models/ner_model_fashion")
+      
+      # Define the headers for the API request
+      headers = {
+          "X-RapidAPI-Key": "addb8aa98cmsh7dfe2f3bcb35e26p11a374jsn236fe1174741",
+          "X-RapidAPI-Host": "amazon-product-data6.p.rapidapi.com"
+      }
+      
+      # Function to process the query and fetch products from the API
+      def process_query(keyword, url, min_price=None, max_price=None, only_best_sellers=False, only_high_rated=False):
+          querystring = {
+              "keyword": keyword,
+              "page": "1",
+              "country": "US",
+              "sort_by": "feature"
+          }
+      
+          try:
+              response = requests.get(url, headers=headers, params=querystring)
+      
+              if response.status_code == 200:
+                  try:
+                      information = response.json()
+                      if 'data' in information:
+                          products = information['data']
+                          if products:
+                              best_sellers = []
+                              others = []
+                              high_rated = []
+      
+                              for product in products:
+                                  bestseller = product.get('is_best_seller', 'N/A')
+                                  highrated = product.get('stars', 'N/A')
+                                  highrated_value = float(highrated) if highrated is not None else 0
+                                  ratingcount = product.get('rating_count', 'N/A')
+                                  ratingcount_value = float(ratingcount) if ratingcount is not None else 0
+                                  price_str = product.get('price', 'N/A')
+                                  if price_str and price_str != 'N/A':
+                                      try:
+                                          price_value = float(price_str.replace('$', '').replace(',', ''))
+                                          if min_price is not None and price_value < min_price:
+                                              continue
+                                          if max_price is not None and price_value > max_price:
+                                              continue
+                                      except ValueError:
+                                          continue
+                                  else:
+                                      continue
+      
+                                  if bestseller:
+                                      best_sellers.append((price_value, product))
+                                  elif highrated_value >= 4.4 and ratingcount_value >= 15:
+                                      high_rated.append((price_value, product))
+                                  else:
+                                      others.append((price_value, product))
+      
+                              best_sellers.sort(key=lambda x: x[0])
+                              others.sort(key=lambda x: x[0])
+                              high_rated.sort(key=lambda x: x[0])
+      
+                              if only_best_sellers:
+                                  relevant_products = [product for _, product in best_sellers[:5]]
+                              elif only_high_rated:
+                                  relevant_products = [product for _, product in high_rated[:5]]
+                              else:
+                                  relevant_products = [product for _, product in others[:5]]
+      
+                              if relevant_products:
+                                  response_text = f"Here are some relevant products related to your question: '{keyword}':\n\n"
+                                  for product in relevant_products:
+                                      title = product.get('title', 'N/A')
+                                      price = product.get('price', 'N/A')
+                                      url = product.get('url', 'N/A')
+                                      stars = product.get('stars', 'N/A')
+                                      rating_count = product.get('rating_count', 'N/A')
+                                      is_best_seller = product.get('is_best_seller', 'N/A')
+                                      response_text += (
+                                          f"- {title}\n"
+                                          f"  Price: {price}\n"
+                                          f"  Rated: {stars} stars by {rating_count} customers\n"
+                                          f"  Best seller: {is_best_seller}\n"
+                                          f"  See more information here: {url}\n\n"
+                                      )
+                                  return response_text.strip()
+                              else:
+                                  if only_best_sellers:
+                                      return f"Sorry, I couldn't find any best-seller products related to '{keyword}'. Please specify your query more clearly."
+                                  elif only_high_rated:
+                                      return f"Sorry, I couldn't find any high-rated products related to '{keyword}'. Please specify your query more clearly."
+                                  else:
+                                      return f"Sorry, I couldn't find any products within the price range of ${min_price} to ${max_price} related to '{keyword}'."
+                          else:
+                              return f"Sorry, I couldn't find any products related to '{keyword}'."
+                      else:
+                          return "No 'data' key found in the API response."
+                  except Exception as e:
+                      return f"Error processing API response: {e}"
+              else:
+                  return f"Error fetching data from the API: {response.text}"
+          except requests.exceptions.RequestException as e:
+              return f"Error: Unable to connect to the API server. {e}"
+      
+      
+      # Define the chatbot function that analyzes the user's statement, constructs a query, and calls process_query() function
+      def chatbot(statement, url):
+          product_intents = ["show", "recommend", "find", "searching", "looking for", "buy"]
+          best_seller_keywords = ["best seller", "top seller", "popular", "bestseller", "best-seller", "best-selling", "bestselling", "best selling", "best"]
+          high_rated_keywords = ["good", "top", "top-rated", "highly", "highest rated", "toprated", "top rated", "highest-rated", "loved", "rated 4 stars", "stars", "highest", "rated"]
+          product_keywords = ["shoe", "shoes", "tennis shoes", "high heel shoes", "high heels", "women's shoes", "kids shoes", ""]
+          size_keywords = ["size"]
+          statement = custom_nlp(statement.lower())
+      
+          if any(intent in statement.text for intent in product_intents) and any(keyword in statement.text for keyword in product_keywords):
+              query = ""
+              prices = []
+              is_size = False
+              only_best_sellers = False
+              only_high_rated = False
+              for token in statement:
+                  if token.text in size_keywords:
+                      is_size = True
+                      query += f"{token.text} "
+                  elif token.like_num:
+                      if is_size:
+                          query += f"{token.text} "
+                          is_size = False
+                      else:
+                          prices.append(float(token.text))
+                          query += f"{token.text} "
+                  else:
+                      query += f"{token.text} "
+      
+              if any(keyword in statement.text for keyword in best_seller_keywords):
+                  only_best_sellers = True
+              elif any(keyword in statement.text for keyword in high_rated_keywords):
+                  only_high_rated = True
+      
+              if query:
+                  min_price, max_price = None, None
+                  if len(prices) == 1:
+                      max_price = prices[0]
+                  elif len(prices) == 2:
+                      min_price, max_price = min(prices), max(prices)
+                  product_information = process_query(query.strip(), url, min_price, max_price, only_best_sellers, only_high_rated)
+                  if product_information is not None:
+                      return product_information
+                  else:
+                      return "Something went wrong."
+              else:
+                  return "Please specify your query more clearly."
+          else:
+              return "This question is not related to products. Please ask a product-related question."
+      
+      @app.route("/", methods=["GET", "POST"])
+      def index():
+          if request.method == "POST":
+              user_query = request.form["query"]
+              url = "https://amazon-product-data6.p.rapidapi.com/product-by-text"
+              if re.search(r"\b(bye|goodbye|exit)\b", user_query, re.IGNORECASE):
+                  bot_response = "Goodbye! Have a good day."
+              elif re.search(r"\b(thank you|thanks|thankyou)\b", user_query, re.IGNORECASE):
+                  bot_response = "Is there anything else I can help you with today?"
+              elif re.search(r"\b(no|no, thank you|no, thanks)\b", user_query, re.IGNORECASE):
+                  bot_response = "Okay, goodbye! Have a great day."
+              else:
+                  bot_response = chatbot(user_query, url)
+              return render_template("index.html", user_query=user_query, bot_response=bot_response)
+          return render_template("index.html")
+      
+      if __name__ == "__main__":
+          app.run(debug=True)
+
 
 
 
