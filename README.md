@@ -368,7 +368,7 @@ train_ner_model.py:
                 return training_data
             
             # Load the training data from your CSV file
-            file_path = "/Users/zsuzsi/Documents/GitHub/Live-Project_AI/ChatBot/AI_LP/data/fashion_products.csv"
+            file_path = "file_path_here"
             training_data = load_training_data(file_path)
             
             # Process the training data and update the NER model
@@ -378,7 +378,7 @@ train_ner_model.py:
                   nlp.update([example], losses={})
             
             # Save the trained NER model
-            nlp.to_disk("/Users/zsuzsi/Documents/GitHub/Live-Project_AI/ChatBot/AI_LP/models/ner_model_fashion")
+            nlp.to_disk("file_path_here")
 
 app.py:
 
@@ -391,7 +391,7 @@ app.py:
       app = Flask(__name__)
       
       # Load the previously trained spaCy model for named entity recognition (NER)
-      custom_nlp = spacy.load("/Users/zsuzsi/Documents/GitHub/Live-Project_AI/ChatBot/AI_LP/models/ner_model_fashion")
+      custom_nlp = spacy.load("file_path_here")
       
       # Define the headers for the API request
       headers = {
