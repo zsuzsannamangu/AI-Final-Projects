@@ -60,7 +60,7 @@ The rule-based chatbot is for a restaurant's website. I created a predefined set
                   return intent
           return None
 
-       #This function selects a response based on the matched intent and user input
+      #This function selects a response based on the matched intent and user input
       def get_response(intent, user_input):
           if intent in responses:
               if isinstance(responses[intent], list):
@@ -75,7 +75,6 @@ The rule-based chatbot is for a restaurant's website. I created a predefined set
       @app.route('/')
       def index():
           return render_template('index.html')
-      
       @app.route('/chat', methods=['POST'])
 
       #This function handles incoming messages from the client and generates responses
@@ -93,7 +92,7 @@ The rule-based chatbot is for a restaurant's website. I created a predefined set
           else:
               return jsonify(response="I'm sorry, I didn't understand that.")
 
-      #Start the Flask development server, with debug mode enabled
+      #This line starts the Flask development server, with debug mode enabled
       if __name__ == '__main__':
           app.run(debug=True)
       
