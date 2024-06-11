@@ -652,10 +652,7 @@ index.html:
 
 To run the Python projects in this repository, follow these steps:
 
-1. **Clone the repository:**
-    ```bash
-    git clone https://github.com/zsuzsannamangu/Chatbots.git
-    ```
+1. **Create a folder and copy the code:**
 
 2. **Navigate to the project directory:**
     ```bash
