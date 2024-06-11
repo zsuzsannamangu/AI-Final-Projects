@@ -1,9 +1,10 @@
 # Chatbot projects
 
-I was given the task to create two different chatbots. The first one was a rule-based chatbot, and the second one was an AI-based chatbot. I used Python and Visual Studio Code to write my code, and Flask for the GUI.
+I created two different chatbots. The first one was a rule-based chatbot, and the second one was an AI-based chatbot. I used Python and Visual Studio Code to write my code, and Flask for the GUI.
 
 ## Technologies used
-Python, spaCy, Flask, Visual Studio Code
+
+_Python, spaCy, Flask, Visual Studio Code_
 
 ## Rule-based chatbot
 
@@ -645,5 +646,98 @@ index.html:
       </body>
       </html>
 
+## Usage
 
+### Running Python Projects
+
+To run the Python projects in this repository, follow these steps:
+
+1. **Clone the repository:**
+    ```bash
+    git clone https://github.com/zsuzsannamangu/Chatbots.git
+    ```
+
+2. **Navigate to the project directory:**
+    ```bash
+    cd your-repo
+    ```
+
+3. **Create a virtual environment and activate it:**
+    - On macOS and Linux:
+      ```bash
+      python3 -m venv venv
+      source venv/bin/activate
+      ```
+    - On Windows:
+      ```bash
+      python -m venv venv
+      venv\Scripts\activate
+      ```
+
+4. **Install the required dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+5. **Run the project:**
+   For a Flask project, set the environment variable and run the application:
+      - On macOS and Linux:
+        ```bash
+        export FLASK_APP=app.py
+        export FLASK_ENV=development
+        flask run
+        ```
+      - On Windows:
+        ```bash
+        set FLASK_APP=app.py
+        set FLASK_ENV=development
+        flask run
+        ```
+      Open your browser and visit `http://localhost:5000` to view the application.
+
+### Example: Running a Django Project
+
+1. **Apply migrations:**
+    ```bash
+    python manage.py migrate
+    ```
+
+2. **Run the development server:**
+    ```bash
+    python manage.py runserver
+    ```
+
+3. **Open your browser and visit:**
+    ```bash
+    http://localhost:8000
+    ```
+
+### Example: Running a Flask Project
+
+1. **Set environment variables and run the application:**
+    - On macOS and Linux:
+      ```bash
+      export FLASK_APP=app.py
+      export FLASK_ENV=development
+      flask run
+      ```
+    - On Windows:
+      ```bash
+      set FLASK_APP=app.py
+      set FLASK_ENV=development
+      flask run
+      ```
+
+2. **Open your browser and visit:**
+    ```bash
+    http://localhost:5000
+    ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/git/git-scm.com/blob/main/MIT-LICENSE.txt) file for details.
+
+## Contact
+
+Feel free to reach out at zsuzsannamangu[at]gmail.com if you have any questions or suggestions!
 
