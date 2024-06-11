@@ -652,7 +652,7 @@ index.html:
 
 To run the Python projects in this repository, follow these steps:
 
-1. **Create a folder and copy the code:**
+1. **Create a folder and copy the code**
 
 2. **Navigate to the project directory:**
     ```bash
